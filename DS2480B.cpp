@@ -235,14 +235,14 @@ uint8_t DS2480B::read_bit(void)
 // go tri-state at the end of the write to avoid heating in a short or
 // other mishap. - Currently power isn't actually used now.
 //
-void DS2480B::write(uint8_t v, uint8_t power) {
+void DS2480B::write(uint8_t v, uint8_t power /* = 0 */) {
 	uint8_t r;
 
 	dataMode();
 
 	this->_port->write(v);
-	//need to double up transmission if the sent byte was the same as the command bytes
-   if (v == COMMAND_MODE) this->_port->write(v);
+	//need to double up transmission if the sent byte was one of the command bytes
+	if (v == COMMAND_MODE) this->_port->write(v);
 	if (!waitForReply()) return;
 	r = this->_port->read(); //throw away reply
 }
