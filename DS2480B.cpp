@@ -118,8 +118,7 @@ sample code bearing this copyright.
 */
 
 #include "DS2480B.h"
-
-DS2480B::DS2480B(AltSoftSerial port)
+DS2480B::DS2480B(SoftwareSerial* port)
 {
 	_port = port;
 #if ONEWIRE_SEARCH
@@ -127,9 +126,22 @@ DS2480B::DS2480B(AltSoftSerial port)
 #endif
 }
 
+DS2480B::DS2480B()
+{
+}
+
+void DS2480B::begin(SoftwareSerial* port)
+{
+	_port = port;
+#if ONEWIRE_SEARCH
+	reset_search();
+#endif
+   this->begin();
+}
+
 void DS2480B::begin()
 {
-	_port.write(0xC1);
+	this->_port->write(0xC1);
 	isCmdMode = true;
 }
 
@@ -146,10 +158,10 @@ uint8_t DS2480B::reset(void)
 
 	commandMode();
 
-	_port.write(0xC1);
+	this->_port->write(0xC1);
 	//proper return is 0xCD otherwise something was wrong
-	while (!_port.available());
-	r = _port.read();
+	while (!this->_port->available());
+	r = this->_port->read();
 	if (r == 0xCD) return 1;
 	return 0;
 }
@@ -158,7 +170,7 @@ void DS2480B::dataMode()
 {
 	if (isCmdMode)
 	{
-		_port.write(DATA_MODE);
+		this->_port->write(DATA_MODE);
 		isCmdMode = false;
 	}
 }
@@ -167,7 +179,7 @@ void DS2480B::commandMode()
 {
 	if (!isCmdMode)
 	{
-		_port.write(COMMAND_MODE);
+		this->_port->write(COMMAND_MODE);
 		isCmdMode = true;
 	}
 }
@@ -187,7 +199,7 @@ bool DS2480B::waitForReply()
 {
 	for (uint16_t i = 0; i < 30000; i++)
 	{
-		if (_port.available()) return true;
+		if (this->_port->available()) return true;
 	}
 	return false;
 }
@@ -200,10 +212,10 @@ uint8_t DS2480B::write_bit(uint8_t v)
 {
 	uint8_t val;
 	commandMode();
-	if (v == 1) _port.write(0x91); //write a single "on" bit to onewire
-	else _port.write(0x81); //write a single "off" bit to onewire
+	if (v == 1) this->_port->write(0x91); //write a single "on" bit to onewire
+	else this->_port->write(0x81); //write a single "off" bit to onewire
 	if (!waitForReply()) return 0;
-	val = _port.read();
+	val = this->_port->read();
 	return val & 1;
 }
 
@@ -228,11 +240,11 @@ void DS2480B::write(uint8_t v, uint8_t power /* = 0 */) {
 
 	dataMode();
 
-	_port.write(v);
+	this->_port->write(v);
 	//need to double up transmission if the sent byte was one of the command bytes
-	if (v == DATA_MODE || v == COMMAND_MODE || v == PULSE_TERM) _port.write(v);
+	if (v == COMMAND_MODE) this->_port->write(v);
 	if (!waitForReply()) return;
-	r = _port.read(); //throw away reply
+	r = this->_port->read(); //throw away reply
 }
 
 void DS2480B::writeCmd(uint8_t v, uint8_t power)
@@ -241,10 +253,10 @@ void DS2480B::writeCmd(uint8_t v, uint8_t power)
 
 	commandMode();
 
-	_port.write(v);
+	this->_port->write(v);
 
 	if (!waitForReply()) return;
-	r = _port.read(); //throw away reply
+	r = this->_port->read(); //throw away reply
 }
 
 void DS2480B::write_bytes(const uint8_t *buf, uint16_t count, bool power /* = 0 */) {
@@ -259,9 +271,9 @@ uint8_t DS2480B::read() {
 
 	dataMode();
 
-	_port.write(0xFF);
+	this->_port->write(0xFF);
 	if (!waitForReply()) return 0;
-    r = _port.read();
+    r = this->_port->read();
     return r;
 }
 

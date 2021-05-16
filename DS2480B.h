@@ -10,7 +10,7 @@
 #include "pins_arduino.h"  // for digitalPinToBitMask, etc
 #endif
 
-#include "AltSoftSerial.h"
+#include "SoftwareSerial.h"
 
 // You can exclude certain features from OneWire.  In theory, this
 // might save some space.  In practice, the compiler automatically
@@ -72,7 +72,7 @@
 class DS2480B
 {
   private:
-	AltSoftSerial _port;
+	SoftwareSerial* _port;
 	bool isCmdMode;
 
 #if ONEWIRE_SEARCH
@@ -86,9 +86,11 @@ class DS2480B
   bool waitForReply();
 
   public:
-    DS2480B(AltSoftSerial port);
-
-	void begin();
+    DS2480B(SoftwareSerial* port);
+    DS2480B();
+	
+    void begin(SoftwareSerial* port);
+    void begin();
 
     // Perform a 1-Wire reset cycle. Returns 1 if a device responds
     // with a presence pulse.  Returns 0 if there is no device or the
