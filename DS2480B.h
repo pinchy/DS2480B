@@ -12,6 +12,10 @@
 
 #include "SoftwareSerial.h"
 
+
+#define CMD_RESET_STANDARD 0xC1
+#define CMD_RESET_FLEXIBLE 0xC5
+
 // You can exclude certain features from OneWire.  In theory, this
 // might save some space.  In practice, the compiler automatically
 // removes unused code (technically, the linker, using -fdata-sections
