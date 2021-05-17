@@ -141,7 +141,8 @@ void DS2480B::begin(SoftwareSerial* port)
 
 void DS2480B::begin()
 {
-	this->_port->write(0xC1);
+
+	this->_port->write(CMD_RESET_FLEXIBLE);
 	isCmdMode = true;
 }
 
@@ -158,7 +159,8 @@ uint8_t DS2480B::reset(void)
 
 	commandMode();
 
-	this->_port->write(0xC1);
+   this->_port->write(CMD_RESET_FLEXIBLE);
+
 	//proper return is 0xCD otherwise something was wrong
 	while (!this->_port->available());
 	r = this->_port->read();
@@ -387,6 +389,7 @@ uint8_t DS2480B::search(uint8_t *newAddr)
 
       // issue the search command
       write(0xF0); //send search command to DS18B20 units
+      //write(0xB5);
 
       // loop to do the search
       do
